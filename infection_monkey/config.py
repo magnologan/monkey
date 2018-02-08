@@ -6,8 +6,8 @@ import uuid
 from abc import ABCMeta
 from itertools import product
 
-from exploit import WmiExploiter, Ms08_067_Exploiter, SmbExploiter, RdpExploiter, SSHExploiter, ShellShockExploiter, \
-    SambaCryExploiter, ElasticGroovyExploiter
+from exploit import WmiExploiter, SmbExploiter, SSHExploiter, ShellShockExploiter, \
+    SambaCryExploiter, ElasticGroovyExploiter, Ms08_067_Exploiter, RdpExploiter
 from network import TcpScanner, PingScanner, SMBFinger, SSHFinger, HTTPFinger, MySQLFinger, ElasticFinger
 
 __author__ = 'itamar'
@@ -150,6 +150,9 @@ class Configuration(object):
                          SSHExploiter, ShellShockExploiter, SambaCryExploiter,  # Linux
                          ElasticGroovyExploiter,  # multi
                          ]
+
+    # when scanning, how many victims to scan at once
+    victims_scan_chunk = 2
 
     # how many victims to look for in a single scan iteration
     victims_max_find = 30
