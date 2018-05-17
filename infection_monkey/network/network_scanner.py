@@ -101,7 +101,6 @@ class NetworkScanner(object):
                         LOG.debug("Found max needed victims (%d), stopping scan", max_find)
                         return
 
-
                 if SCAN_DELAY:
                     time.sleep(SCAN_DELAY)
 
