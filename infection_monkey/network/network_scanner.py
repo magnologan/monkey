@@ -75,24 +75,25 @@ class NetworkScanner(object):
         for net_range in self._ranges:
             LOG.debug("Scanning for potential victims in the network %r", net_range)
             for scan_chunk in _grouper(net_range, scan_size):
+                # scan_chunk is a iterable of IP addresses
                 if stop_callback and stop_callback():
                     LOG.debug("Got stop signal")
                     return
 
                 # skip self IP address
-                scan_chunk = [x for x in scan_chunk if x.ip_addr not in self._ip_addresses]
+                scan_chunk = [x for x in scan_chunk if x not in self._ip_addresses]
                 # skip IPs marked as blocked
-                bad_victims = [x for x in scan_chunk if x.ip_addr in WormConfiguration.blocked_ips]
+                bad_victims = [x for x in scan_chunk if x in WormConfiguration.blocked_ips]
                 for victim in bad_victims:
                     LOG.info("Skipping %s due to blacklist" % victim)
 
-                scan_chunk = [x for x in scan_chunk if x.ip_addr not in WormConfiguration.blocked_ips]
+                scan_chunk = [x for x in scan_chunk if x not in WormConfiguration.blocked_ips]
 
                 LOG.debug("Scanning %r...", scan_chunk)
 
                 results = pool.map(partial(self.scan_machine, scanner=scanner),
                                    scan_chunk)
-                victims_chunk = [x for x in results if x]
+                victims_chunk = [x for x in results if x] # filter out dead addresses
 
                 for victim in victims_chunk:
                     victims_count += 1
@@ -105,16 +106,17 @@ class NetworkScanner(object):
                     time.sleep(SCAN_DELAY)
 
     @staticmethod
-    def scan_machine(victim, scanner):
+    def scan_machine(target_ip, scanner):
         """
         Scans specific machine using given scanner
-        :param victim: VictimHost machine
+        :param target_ip: VictimHost machine
         :param scanner: HostScanner instance
         :return: Victim or None if victim isn't alive
         """
-        LOG.debug("Scanning potential victim: %r", victim)
+        LOG.debug("Scanning potential target_ip: %r", target_ip)
+        victim = VictimHost(target_ip)
         if scanner.is_host_alive(victim):
-            LOG.debug("Found potential victim: %r", victim)
+            LOG.debug("Found potential target_ip: %r", victim)
             return victim
         else:
             return None
